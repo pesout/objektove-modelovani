@@ -1,2 +1,3 @@
-# objektove-modelovani
-Praktické ukázky z předmětu Objektové modelování pro výukové účely
+# Objektové modelování – materiály ze cvičení
+
+Praktické ukázky a materiály tvořené na cvičeních z předmětu Objektové modelování na PEF ČZU
