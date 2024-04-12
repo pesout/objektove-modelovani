@@ -1,0 +1,757 @@
+<HTML>
+<STYLE TYPE="TEXT/CSS">
+TABLE.UML {
+	BORDER-WIDTH: 1PX 1PX 1PX 1PX;
+	BORDER-SPACING: 0PX;
+	BORDER-STYLE: SOLID SOLID SOLID SOLID;
+	BORDER-COLOR: BLACK BLACK BLACK BLACK;
+	BORDER-COLLAPSE: SEPARATE;
+	BACKGROUND-COLOR: WHITE;
+}
+
+CODE {
+	FONT-FAMILY: ARIAL;
+	FONT-SIZE: 80%;
+}
+
+PRE {
+	FONT-FAMILY: ARIAL;
+	FONT-SIZE: 80%;
+}
+
+H1 {
+	FONT-FAMILY: ARIAL;
+	FONT-SIZE: 144%;
+	FONT-STYLE: BOLD;
+}
+
+H2 {
+	FONT-FAMILY: ARIAL;
+	FONT-SIZE: 120%;
+	FONT-STYLE: BOLD;
+}
+
+H3 {
+	FONT-FAMILY: ARIAL;
+	FONT-SIZE: 100%;
+	FONT-STYLE: BOLD;
+}
+
+</STYLE>
+<HEAD>
+<TITLE>
+Cviceni 4</TITLE>
+</HEAD>
+<BODY>
+<H1>Cviceni 4</H1>
+<B>author&#40;s&#41;: </B>Stepan Pesout
+<BR>
+<P>
+Ukazkovy projekt ze cviceni 4
+</P>
+
+<BR>
+<HR>
+<H2>Workspace</H2>
+<PRE>&quot; ========= DOTAZY  ========= &quot;
+
+&quot;Stage s prumernou cenou vstupenky pod 1000&quot;
+	
+	StageSet select: [:s | s prumernaCenaVstupenky &lt; 1000]
+
+&quot;Stage s vice nez 1 vystupujicim&quot;
+
+	StageSet select: [:s | s vystupujici size &gt; 1]
+
+&quot;Stage&#44; kde nekdo vystupuje ve 3:00&quot;
+
+	StageSet select: [:s | s vystupujici anySatisfy: [ :v | v casVystoupeni = &#39;03:00&#39; ] ]
+
+&quot;Vstupenky&#44; ktere si koupili navstevnici narozeni pred rokem 2000&quot;
+
+	&#40;NavstevnikSet select: [ :n | n rokNarozeni &lt; 2000 ]&#41; collect: [:n | n vstupenka]
+
+&quot;Prumerny vek navstevniku&#44; kteri dostali slevu na vstupenku&quot;
+
+	&#40;&#40;NavstevnikSet asBag
+		select: [ :n | n vstupenka cenaPoSleve &lt; n vstupenka cena ]&#41; 
+		collect: [:n | n vek]&#41; avg asFloat
+
+&quot;Cela jmena poradatelu&#44; kteri se staraji o stage&#44; kde je program ve 20:00&quot;
+
+	&#40;PoradatelSet
+		select: [ :p | p zodpovednost vystupujici
+			anySatisfy: [ :v | v casVystoupeni = &#39;20:00&#39;  ]
+		]&#41;
+		collect: [ :p | p celeJmeno ]
+
+
+&quot; ========= PRAVIDLA ========= &quot;
+
+&quot;Vsichni navstevnici maji vstupenky&quot;
+
+	&#40;NavstevnikSet select: [:n | n vstupenka isNil]&#41; isEmpty
+
+&quot;Vstupenky maji nezapornou cenu&quot;
+	
+	&#40;VstupenkaSet select: [:v | v cena &lt; 0]&#41; isEmpty
+
+&quot;Kazdy navstevnik muze se vstupenkou aspon na 1 stage&quot;
+
+	&#40;&#40;NavstevnikSet
+		collect: [:n | &#40;n vstupenka stage&#41; size]&#41;
+		select: [:s | s &lt; 1]&#41; isEmpty
+
+&quot;Vsichni vystupujici maji prideleny cas vystoupeni a vyplnene prijmeni&quot;
+
+	&#40;VystupujiciSet 
+		select: [:v | v prijmeni isNil 
+			or: [v casVystoupeni isNil]
+		]&#41; isEmpty
+
+</PRE>
+<H4>Workspace Objects</H4>
+<UL>
+
+<BR>
+<LI>
+<CODE>
+NavstevnikSet :Set
+</CODE>
+<LI>
+<CODE>
+PoradatelSet :Set
+</CODE>
+<LI>
+<CODE>
+StageSet :Set
+</CODE>
+<LI>
+<CODE>
+VstupenkaSet :Set
+</CODE>
+<LI>
+<CODE>
+VystupujiciSet :Set
+</CODE>
+</UL>
+
+<BR>
+<HR>
+<H2>Script</H2>
+<PRE>&quot; --- VYSTUPUJICI --- &quot;
+
+v1 := Vystupujici new.
+v1 jmeno: &#39;Karel&#39;; prijmeni: &#39;Testovaci&#39;; casVystoupeni: &#39;22:00&#39;.
+
+v2 := Vystupujici new.
+v2 jmeno: &#39;Jana&#39;; prijmeni: &#39;Novakova&#39;; casVystoupeni: &#39;20:00&#39;.
+
+v3 := Vystupujici new.
+v3 jmeno: &#39;Petr&#39;; prijmeni: &#39;Svoboda&#39;; casVystoupeni: &#39;21:00&#39;.
+
+v4 := Vystupujici new.
+v4 jmeno: &#39;Lucie&#39;; prijmeni: &#39;Horakova&#39;; casVystoupeni: &#39;23:00&#39;.
+
+v5 := Vystupujici new.
+v5 jmeno: &#39;Jirka&#39;; prijmeni: &#39;Smutny&#39;; casVystoupeni: &#39;03:00&#39;.
+
+VystupujiciSet := Set new.
+VystupujiciSet add: v1; add: v2; add: v3; add: v4; add: v5.
+
+&quot; --- STAGE ---&quot;
+
+s1 := Stage new.
+s1 nazev: &#39;Hlavni stage&#39;; kapacita: 1300.
+s1 vystupujici add: v1; add: v2.
+
+s2 := Stage new.
+s2 nazev: &#39;Vedlejsi stage&#39;; kapacita: 300.
+s2 vystupujici add: v3.
+
+s3 := Stage new.
+s3 nazev: &#39;Akusticka stage&#39;; kapacita: 700.
+s3 vystupujici add: v4.
+
+s4 := Stage new.
+s4 nazev: &#39;Elektronicka stage&#39;; kapacita: 1100.
+s4 vystupujici add: v5.
+
+StageSet := Set new.
+StageSet add: s1; add: s2; add: s3; add: s4.
+
+&quot; --- PORADATELE ---&quot;
+
+p1 := Poradatel new.
+p1 jmeno: &#39;Honza&#39;; prijmeni: &#39;Maly&#39;; zodpovednost: s1.
+
+p2 := Poradatel new.
+p2 jmeno: &#39;Michal&#39;; prijmeni: &#39;Dlouhy&#39;; zodpovednost: s2.
+
+p3 := Poradatel new.
+p3 jmeno: &#39;Eva&#39;; prijmeni: &#39;Kratka&#39;; zodpovednost: s3.
+
+p4 := Poradatel new.
+p4 jmeno: &#39;Ondrej&#39;; prijmeni: &#39;Vesely&#39;; zodpovednost: s4.
+
+PoradatelSet := Set new.
+PoradatelSet add: p1; add: p2; add: p3; add: p4.
+
+&quot; --- VSTUPENKY --- &quot;
+
+vs1 := Vstupenka new.
+vs1 cena: 1200.
+vs1 cenaPoSleve: &#40;vs1 sleva: 20&#41;.
+vs1 stage add: s1; add: s2.
+
+vs2 := Vstupenka new.
+vs2 cena: 1000.
+vs2 cenaPoSleve: &#40;vs2 sleva: 0&#41;.
+vs2 stage add: s1; add: s4.
+
+vs3 := Vstupenka new.
+vs3 cena: 1200.
+vs3 cenaPoSleve: &#40;vs3 sleva: 12&#41;.
+vs3 stage add: s1; add: s2.
+
+vs4 := Vstupenka new.
+vs4 cena: 900.
+vs4 cenaPoSleve: 880.
+vs4 stage add: s3; add: s4.
+
+VstupenkaSet := Set new.
+VstupenkaSet add: vs1; add: vs2; add: vs3; add: vs4.
+
+&quot; --- NAVSTEVNICI --- &quot;
+
+n1 := Navstevnik new.
+n1 jmeno: &#39;Adam&#39;; prijmeni: &#39;Navstevnik&#39;; rokNarozeni: 1999.
+n1 vstupenka: vs1.
+
+n2 := Navstevnik new.
+n2 jmeno: &#39;Barbora&#39;; prijmeni: &#39;Novotna&#39;; rokNarozeni: 2003.
+n2 vstupenka: vs2.
+
+n3 := Navstevnik new.
+n3 jmeno: &#39;David&#39;; prijmeni: &#39;Kral&#39;; rokNarozeni: 1986.
+n3 vstupenka: vs3.
+
+n4 := Navstevnik new.
+n4 jmeno: &#39;Eliska&#39;; prijmeni: &#39;Posledni&#39;; rokNarozeni: 1997.
+n4 vstupenka: vs4.
+
+NavstevnikSet := Set new.
+NavstevnikSet add: n1; add: n2; add: n3; add: n4.</PRE>
+<HR>
+<H2>Diagram</H2>
+<IMG SRC="festival4.gif">
+<HR>
+<H2>Classes</H2>
+<TABLE BORDER="0" CELLPADDING="3" CELLSPACING="0" WIDTH=100%>
+<TR>
+<TD WIDTH=20%>
+<TABLE WIDTH=95% BORDER="1" CELLSPACING="0" BORDERCOLOR=BLACK>
+<TR><TD><BIG>
+<B><CODE>
+Osoba
+</CODE></B>
+</BIG></TD></TR>
+<TR><TD>
+<I><SMALL>instance variables</SMALL></I><BR>
+<CODE>
+jmeno :String
+</CODE>
+<BR>
+<CODE>
+prijmeni :String
+</CODE>
+<BR>
+</TD></TR>
+<TR><TD>
+<I><SMALL>methods</SMALL></I><BR>
+<CODE>
+celeJmeno
+</CODE>
+<BR>
+<CODE>
+initialize
+</CODE>
+<BR>
+<CODE>
+jmeno
+</CODE>
+<BR>
+<CODE>
+jmeno:
+</CODE>
+<BR>
+<CODE>
+prijmeni
+</CODE>
+<BR>
+<CODE>
+prijmeni:
+</CODE>
+<BR>
+</TD></TR>
+</TABLE>
+</TD>
+<TD VALIGN="TOP">
+<P>
+
+</P>
+</TD>
+</TR>
+</TABLE>
+<H4>code of non-accessing methods: </H4>
+<UL>
+<LI>
+<B><CODE>
+celeJmeno
+</CODE></B>
+<PRE>
+	^jmeno &#44; &#39; &#39; &#44; prijmeni</PRE>
+<LI>
+<B><CODE>
+initialize
+</CODE></B>
+<PRE>
+&quot;generated by Daskalos&quot;
+
+     super initialize.
+     jmeno := nil.
+     prijmeni := nil.</PRE>
+</UL>
+<TABLE BORDER="0" CELLPADDING="3" CELLSPACING="0" WIDTH=100%>
+<TR>
+<TD WIDTH=20%>
+<TABLE WIDTH=95% BORDER="1" CELLSPACING="0" BORDERCOLOR=BLACK>
+<TR><TD><BIG>
+<B><CODE>
+Stage
+</CODE></B>
+</BIG></TD></TR>
+<TR><TD>
+<I><SMALL>instance variables</SMALL></I><BR>
+<CODE>
+kapacita :Number
+</CODE>
+<BR>
+<CODE>
+nazev :String
+</CODE>
+<BR>
+<CODE>
+vystupujici :Set
+</CODE>
+<BR>
+</TD></TR>
+<TR><TD>
+<I><SMALL>methods</SMALL></I><BR>
+<CODE>
+initialize
+</CODE>
+<BR>
+<CODE>
+kapacita
+</CODE>
+<BR>
+<CODE>
+kapacita:
+</CODE>
+<BR>
+<CODE>
+nazev
+</CODE>
+<BR>
+<CODE>
+nazev:
+</CODE>
+<BR>
+<CODE>
+program
+</CODE>
+<BR>
+<CODE>
+prumernaCenaVstupenky
+</CODE>
+<BR>
+<CODE>
+velikost
+</CODE>
+<BR>
+<CODE>
+vystupujici
+</CODE>
+<BR>
+</TD></TR>
+</TABLE>
+</TD>
+<TD VALIGN="TOP">
+<P>
+
+</P>
+</TD>
+</TR>
+</TABLE>
+<H4>code of non-accessing methods: </H4>
+<UL>
+<LI>
+<B><CODE>
+initialize
+</CODE></B>
+<PRE>
+&quot;generated by Daskalos&quot;
+
+     super initialize.
+     nazev := nil.
+     kapacita := nil.
+     vystupujici := Set new.</PRE>
+<LI>
+<B><CODE>
+program
+</CODE></B>
+<PRE>
+	^vystupujici collect: [:v | v celeJmeno]</PRE>
+<LI>
+<B><CODE>
+prumernaCenaVstupenky
+</CODE></B>
+<PRE>
+	^&#40;&#40;Vstupenka allInstances select: [:v | v stage includes: self]&#41; 
+		collect: [:v | v cena]&#41; avg 
+		asFloat</PRE>
+<LI>
+<B><CODE>
+velikost
+</CODE></B>
+<PRE>
+	kapacita &lt;= 500 ifTrue: [^&#39;Mala&#39;].
+	kapacita &lt;= 1000 ifTrue: [^&#39;Stredni&#39;].
+	^&#39;Velka&#39;</PRE>
+</UL>
+<TABLE BORDER="0" CELLPADDING="3" CELLSPACING="0" WIDTH=100%>
+<TR>
+<TD WIDTH=20%>
+<TABLE WIDTH=95% BORDER="1" CELLSPACING="0" BORDERCOLOR=BLACK>
+<TR><TD><BIG>
+<B><CODE>
+Vstupenka
+</CODE></B>
+</BIG></TD></TR>
+<TR><TD>
+<I><SMALL>instance variables</SMALL></I><BR>
+<CODE>
+cena :Number
+</CODE>
+<BR>
+<CODE>
+cenaPoSleve :Number
+</CODE>
+<BR>
+<CODE>
+stage :Set
+</CODE>
+<BR>
+</TD></TR>
+<TR><TD>
+<I><SMALL>methods</SMALL></I><BR>
+<CODE>
+cena
+</CODE>
+<BR>
+<CODE>
+cena:
+</CODE>
+<BR>
+<CODE>
+cenaPoSleve
+</CODE>
+<BR>
+<CODE>
+cenaPoSleve:
+</CODE>
+<BR>
+<CODE>
+initialize
+</CODE>
+<BR>
+<CODE>
+sleva:
+</CODE>
+<BR>
+<CODE>
+stage
+</CODE>
+<BR>
+</TD></TR>
+</TABLE>
+</TD>
+<TD VALIGN="TOP">
+<P>
+
+</P>
+</TD>
+</TR>
+</TABLE>
+<H4>code of non-accessing methods: </H4>
+<UL>
+<LI>
+<B><CODE>
+initialize
+</CODE></B>
+<PRE>
+&quot;generated by Daskalos&quot;
+
+     super initialize.
+     cena := nil.
+     stage := Set new.
+     cenaPoSleve := nil.</PRE>
+<LI>
+<B><CODE>
+sleva: procento 
+</CODE></B>
+<PRE>
+	^cena &#42; &#40;1 - &#40;procento / 100&#41;&#41; asFloat</PRE>
+</UL>
+<TABLE BORDER="0" CELLPADDING="3" CELLSPACING="0" WIDTH=100%>
+<TR>
+<TD WIDTH=20%>
+<TABLE WIDTH=95% BORDER="1" CELLSPACING="0" BORDERCOLOR=BLACK>
+<TR><TD><BIG>
+<B><CODE>
+Vystupujici
+</CODE></B>
+</BIG></TD></TR>
+<TR><TD>
+<I><SMALL>instance variables</SMALL></I><BR>
+<CODE>
+casVystoupeni :String
+</CODE>
+<BR>
+</TD></TR>
+<TR><TD>
+<I><SMALL>methods</SMALL></I><BR>
+<CODE>
+casVystoupeni
+</CODE>
+<BR>
+<CODE>
+casVystoupeni:
+</CODE>
+<BR>
+<CODE>
+initialize
+</CODE>
+<BR>
+</TD></TR>
+</TABLE>
+</TD>
+<TD VALIGN="TOP">
+<P>
+
+</P>
+</TD>
+</TR>
+</TABLE>
+<H4>code of non-accessing methods: </H4>
+<UL>
+<LI>
+<B><CODE>
+initialize
+</CODE></B>
+<PRE>
+&quot;generated by Daskalos&quot;
+
+     super initialize.
+     casVystoupeni := nil.</PRE>
+</UL>
+<TABLE BORDER="0" CELLPADDING="3" CELLSPACING="0" WIDTH=100%>
+<TR>
+<TD WIDTH=20%>
+<TABLE WIDTH=95% BORDER="1" CELLSPACING="0" BORDERCOLOR=BLACK>
+<TR><TD><BIG>
+<B><CODE>
+Navstevnik
+</CODE></B>
+</BIG></TD></TR>
+<TR><TD>
+<I><SMALL>instance variables</SMALL></I><BR>
+<CODE>
+rokNarozeni :Number
+</CODE>
+<BR>
+<CODE>
+vstupenka :Object
+</CODE>
+<BR>
+</TD></TR>
+<TR><TD>
+<I><SMALL>methods</SMALL></I><BR>
+<CODE>
+casyZacatku
+</CODE>
+<BR>
+<CODE>
+cenaVstupenky
+</CODE>
+<BR>
+<CODE>
+initialize
+</CODE>
+<BR>
+<CODE>
+rokNarozeni
+</CODE>
+<BR>
+<CODE>
+rokNarozeni:
+</CODE>
+<BR>
+<CODE>
+vek
+</CODE>
+<BR>
+<CODE>
+vstupenka
+</CODE>
+<BR>
+<CODE>
+vstupenka:
+</CODE>
+<BR>
+</TD></TR>
+</TABLE>
+</TD>
+<TD VALIGN="TOP">
+<P>
+
+</P>
+</TD>
+</TR>
+</TABLE>
+<H4>code of non-accessing methods: </H4>
+<UL>
+<LI>
+<B><CODE>
+casyZacatku
+</CODE></B>
+<PRE>
+	^&#40;vstupenka stage 
+		collect: [:s | s vystupujici collect: [:v | v casVystoupeni]]&#41; flatten 
+		asSet</PRE>
+<LI>
+<B><CODE>
+cenaVstupenky
+</CODE></B>
+<PRE>
+	^vstupenka cenaPoSleve</PRE>
+<LI>
+<B><CODE>
+initialize
+</CODE></B>
+<PRE>
+&quot;generated by Daskalos&quot;
+
+     super initialize.
+     rokNarozeni := nil.
+     vstupenka := nil.</PRE>
+<LI>
+<B><CODE>
+vek
+</CODE></B>
+<PRE>
+	^Date today year - rokNarozeni</PRE>
+</UL>
+<TABLE BORDER="0" CELLPADDING="3" CELLSPACING="0" WIDTH=100%>
+<TR>
+<TD WIDTH=20%>
+<TABLE WIDTH=95% BORDER="1" CELLSPACING="0" BORDERCOLOR=BLACK>
+<TR><TD><BIG>
+<B><CODE>
+Poradatel
+</CODE></B>
+</BIG></TD></TR>
+<TR><TD>
+<I><SMALL>instance variables</SMALL></I><BR>
+<CODE>
+specializace :String
+</CODE>
+<BR>
+<CODE>
+zodpovednost :Object
+</CODE>
+<BR>
+</TD></TR>
+<TR><TD>
+<I><SMALL>methods</SMALL></I><BR>
+<CODE>
+initialize
+</CODE>
+<BR>
+<CODE>
+kapacitaStage
+</CODE>
+<BR>
+<CODE>
+specializace
+</CODE>
+<BR>
+<CODE>
+specializace:
+</CODE>
+<BR>
+<CODE>
+zodpovednost
+</CODE>
+<BR>
+<CODE>
+zodpovednost:
+</CODE>
+<BR>
+</TD></TR>
+</TABLE>
+</TD>
+<TD VALIGN="TOP">
+<P>
+
+</P>
+</TD>
+</TR>
+</TABLE>
+<H4>code of non-accessing methods: </H4>
+<UL>
+<LI>
+<B><CODE>
+initialize
+</CODE></B>
+<PRE>
+&quot;generated by Daskalos&quot;
+
+     super initialize.
+     specializace := nil.
+     zodpovednost := nil.</PRE>
+<LI>
+<B><CODE>
+kapacitaStage
+</CODE></B>
+<PRE>
+	^zodpovednost kapacita</PRE>
+</UL>
+<HR>
+<H2>Links</H2>
+<A HREF="festival4.xml">Data file</A> and 
+<A HREF="festival4.st">class source</A>.
+
+<BR>
+
+<BR>
+<CODE>
+Generated by Daskalos - Object Modeling Tutor &#40;C&#41; 2006 V. Merunka
+</CODE>
+
+<BR>
+<CODE>
+April 12&#44; 2024
+</CODE>
+</BODY></HTML>
